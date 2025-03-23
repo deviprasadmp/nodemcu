@@ -91,24 +91,24 @@ void setup() {
   pinMode(1, OUTPUT);            // GPIO1
   pinMode(3, OUTPUT);            // GPIO3
 
+  // Power on the onboard LED
   digitalWrite(LED_BUILTIN, HIGH);
+
+  // Both relays off at start
   relay0Off();
   relay1Off();
 
-  // WiFi
-  /* 
-  Explicitly set the ESP8266 to be a WiFi-client, otherwise, it by default,
-  would try to act as both a client and an access-point and could cause
-  network-issues with your other WiFi-devices on your WiFi-network. 
-  */
+  // Connect to WiFi
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);
 
+  // Blink the power LED while connecting to WiFi
   while (WiFi.status() != WL_CONNECTED) {
 
     blink(1);
   }
 
+  // Blink power LED 5 times too indicate successful connection to WiFi
   delay(3000);
   blink(5);
 
@@ -116,9 +116,11 @@ void setup() {
   // Cache SSL sessions to accelerate the TLS handshake.
   server.getServer().setCache(&serverCache);
 
+  // API is located at root of web server
   server.on("/", handleRequest);
   server.begin();
 
+  // Setup serial for debugging
 #ifdef SERIAL_DEBUG
   Serial.begin(9600);
   Serial.println("HTTPS server started ...");
@@ -146,6 +148,8 @@ void handleRequest() {
   Serial.printf("delayStr=%s\n", delayStr);
 #endif
 
+  // Security - Simple API key auth
+  // Don't do anything if API key doesn't match
   if (key != API_KEY) {
 
     return;
